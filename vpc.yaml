@@ -359,6 +359,9 @@ Resources:
         Type: AWS::EC2::SecurityGroup
         Properties:
             VpcId: !Ref Vpc
+            Tags:
+                - Key: Name
+                  Value: !Sub "${AWS::StackName}-Dbsg"
             GroupDescription: Ingress rules Bastion
             SecurityGroupIngress:
             - IpProtocol: tcp
