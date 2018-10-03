@@ -5,13 +5,11 @@ Mappings:
             LbCidr: "10.0.20.0/24"
             WsCidr: "10.0.21.0/24"
             BastionCidr: "10.0.22.0/24"
-            PublicWsCidr: "10.0.23.0/24"
         AZ2:
             Name: us-east-1b
             LbCidr: "10.0.40.0/24"
             WsCidr: "10.0.41.0/24"
             BastionCidr: "10.0.42.0/24"
-            PublicWsCidr: "10.0.43.0/24"
 
 Resources:
     Vpc:
@@ -135,71 +133,6 @@ Resources:
             Tags:
                 - Key: Name
                   Value: !Sub "${AWS::StackName}-BastionNetworkAcl"
-
-    # Bastion Network ACLs
-    PublicWsNetworkAcl:
-        Type: AWS::EC2::NetworkAcl
-        Properties:
-            VpcId: !Ref Vpc
-            Tags:
-                - Key: Name
-                  Value: !Sub "${AWS::StackName}-PublicWsNetworkAcl"
-
-    # PublicWs Network ACLs Ephemeral Inbound
-    PublicWsNetworkAclAllowEphemeralInbound:
-        Type: AWS::EC2::NetworkAclEntry
-        Properties:
-            NetworkAclId: !Ref PublicWsNetworkAcl
-            RuleNumber: 101
-            Protocol: 6
-            RuleAction: allow
-            Egress: false
-            CidrBlock: "0.0.0.0/0"
-            PortRange:
-                From: 1024
-                To: 65535
-
-    # PublicWs Network ACLs Httpd Inbound
-    PublicWsNetworkAclAllowHttpdInbound:
-        Type: AWS::EC2::NetworkAclEntry
-        Properties:
-            NetworkAclId: !Ref PublicWsNetworkAcl
-            RuleNumber: 102
-            Protocol: 6
-            RuleAction: allow
-            Egress: false
-            CidrBlock: "0.0.0.0/0"
-            PortRange:
-                From: 80
-                To: 80
-
-    # PublicWs Network ACLs HTTPS Inbound
-    PublicWsNetworkAclAllowHttpsInbound:
-        Type: AWS::EC2::NetworkAclEntry
-        Properties:
-            NetworkAclId: !Ref PublicWsNetworkAcl
-            RuleNumber: 103
-            Protocol: 6
-            RuleAction: allow
-            Egress: false
-            CidrBlock: "0.0.0.0/0"
-            PortRange:
-                From: 443
-                To: 443
-
-    # PublicWs Network ACLs Outbound
-    PublicWsNetworkAclAllowAllOutbound:
-        Type: AWS::EC2::NetworkAclEntry
-        Properties:
-            NetworkAclId: !Ref PublicWsNetworkAcl
-            RuleNumber: 100
-            Protocol: -1
-            RuleAction: allow
-            Egress: true
-            CidrBlock: "0.0.0.0/0"
-            PortRange:
-                From: 0
-                To: 65535
 
     # Bastion Network ACLs Ssh Inbound
     BastionNetworkAclAllowSshInbound:
@@ -384,17 +317,29 @@ Resources:
                 From: 0
                 To: 65535
 
-    # Private instance security group
-    PrivateInstanceSecurityGroup:
+    # Web server security group configuration
+    WsNetworkSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
             VpcId: !Ref Vpc
-            GroupDescription: Ingress rules private instances
+            GroupDescription: Ingress rules Bastion
             SecurityGroupIngress:
             - IpProtocol: tcp
-              FromPort: '443'
-              ToPort: '443'
-              CidrIp: 0.0.0.0/0
+              FromPort: '22'
+              ToPort: '22'
+              CidrIp: !FindInMap [ AvailabilityZone, AZ1, BastionCidr ]
+            - IpProtocol: tcp
+              FromPort: '22'
+              ToPort: '22'
+              CidrIp: !FindInMap [ AvailabilityZone, AZ2, BastionCidr ]
+            - IpProtocol: tcp
+              FromPort: '80'
+              ToPort: '80'
+              CidrIp: !FindInMap [ AvailabilityZone, AZ1, BastionCidr ]
+            - IpProtocol: tcp
+              FromPort: '80'
+              ToPort: '80'
+              CidrIp: !FindInMap [ AvailabilityZone, AZ2, BastionCidr ]
             - IpProtocol: tcp
               FromPort: '80'
               ToPort: '80'
@@ -402,83 +347,11 @@ Resources:
             - IpProtocol: tcp
               FromPort: '80'
               ToPort: '80'
-              CidrIp: !FindInMap [ AvailabilityZone, AZ2, LbCidr ]
-            - IpProtocol: tcp
-              FromPort: '80'
-              ToPort: '80'
-              CidrIp: !FindInMap [ AvailabilityZone, AZ1, BastionCidr ]
-            - IpProtocol: tcp
-              FromPort: '80'
-              ToPort: '80'
-              CidrIp: !FindInMap [ AvailabilityZone, AZ2, BastionCidr ]
-            - IpProtocol: tcp
-              FromPort: '22'
-              ToPort: '22'
-              CidrIp: !FindInMap [ AvailabilityZone, AZ1, BastionCidr ]
-            - IpProtocol: tcp
-              FromPort: '22'
-              ToPort: '22'
-              CidrIp: !FindInMap [ AvailabilityZone, AZ2, BastionCidr ]
+              CidrIp: !FindInMap [ AvailabilityZone, AZ2, LbCidr ]            
+
             SecurityGroupEgress:
             - IpProtocol: -1
               CidrIp: 0.0.0.0/0
-
-    # Public Nginx security group configuration
-    PublicWsSecurityGroup:
-        Type: AWS::EC2::SecurityGroup
-        Properties:
-            VpcId: !Ref Vpc
-            GroupDescription: Ingress rules Bastion
-            SecurityGroupIngress:
-            - IpProtocol: tcp
-              FromPort: '80'
-              ToPort: '80'
-              CidrIp: 0.0.0.0/0
-            - IpProtocol: tcp
-              FromPort: '22'
-              ToPort: '22'
-              CidrIp: 0.0.0.0/0
-            SecurityGroupEgress:
-            - IpProtocol: -1
-              CidrIp: 0.0.0.0/0
-
-    # Public Nginx subnet configuration AZ1
-    PublicWsSubnetAZ1:
-        Type: AWS::EC2::Subnet
-        Properties:
-            VpcId: !Ref Vpc
-            AvailabilityZone: !FindInMap [AvailabilityZone, AZ1, Name]
-            CidrBlock: !FindInMap [AvailabilityZone, AZ1, PublicWsCidr]
-            MapPublicIpOnLaunch: true
-            Tags:
-                - Key: Name
-                  Value: !Sub "${AWS::StackName}-PublicWsSubnetAZ1"
-
-    # Public Nginx subnet configuration AZ2
-    PublicWsSubnetAZ2:
-        Type: AWS::EC2::Subnet
-        Properties:
-            VpcId: !Ref Vpc
-            AvailabilityZone: !FindInMap [AvailabilityZone, AZ2, Name]
-            CidrBlock: !FindInMap [AvailabilityZone, AZ2, PublicWsCidr]
-            MapPublicIpOnLaunch: true
-            Tags:
-                - Key: Name
-                  Value: !Sub "${AWS::StackName}-PublicWsSubnetAZ2"
-    
-    # Public instance route table 
-    PublicWsSubnetRouteTableAZ1:
-        DependsOn: RouteTable
-        Type: AWS::EC2::SubnetRouteTableAssociation
-        Properties:
-            SubnetId: !Ref PublicWsSubnetAZ1
-            RouteTableId: !Ref RouteTable
-
-    PublicWsSubnetNetworkAclAZ1:
-        Type: AWS::EC2::SubnetNetworkAclAssociation
-        Properties:
-            SubnetId: !Ref PublicWsSubnetAZ2
-            NetworkAclId: !Ref PublicWsNetworkAcl
 
     # Bastion security group configuration
     BastionSecurityGroup:
@@ -685,12 +558,6 @@ Outputs:
         Value: !Ref WsSubnetAZ2
         Export:
             Name: !Sub "${AWS::StackName}-WsSubnetAZ2"
-
-    BastionSecurityGroup:
-        Description: Bastion Security Group
-        Value: !Ref BastionSecurityGroup
-        Export:
-            Name: !Sub "${AWS::StackName}-BastionSecurityGroup"
 
     AZ1:
         Description: Availability Zone 1
