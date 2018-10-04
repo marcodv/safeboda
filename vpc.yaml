@@ -77,9 +77,6 @@ Resources:
         Properties:
             AllocationId: !GetAtt WsNetworkNatEIP1.AllocationId
             SubnetId: !Ref BastionSubnetAZ1
-            Tags:
-              - Key: Name
-                Value: !Sub "${AWS::StackName}-NatGatewayAZ1"
 
     WsNatGateWayAZ2:
         Type: AWS::EC2::NatGateway
@@ -702,6 +699,18 @@ Outputs:
         Value: !Ref WsSubnetAZ1
         Export:
             Name: !Sub "${AWS::StackName}-WsSubnetAZ1"
+
+    DbSubnetAZ1:
+        Description: Db Subnet AZ1
+        Value: !Ref DbSubnetAZ1
+        Export:
+            Name: !Sub "${AWS::StackName}-DbSubnetAZ1"
+
+    DbSubnetAZ2:
+        Description: Db Subnet AZ2
+        Value: !Ref DbSubnetAZ2
+        Export:
+            Name: !Sub "${AWS::StackName}-DbSubnetAZ2"
 
     BastionSubnetAZ2:
         Description: Bastion Subnet AZ2
