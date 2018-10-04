@@ -730,14 +730,15 @@ Outputs:
         Export:
             Name: !Sub "${AWS::StackName}-WsSubnetAZ2"
 
-    AZ1:
-        Description: Availability Zone 1
-        Value: !FindInMap [AvailabilityZone, AZ1, Name]
+    LbSecurityGroupAZ1:
+        Description: Load Balancer security group
+        Value: !Ref LbSecurityGroup
         Export:
-            Name: !Sub "${AWS::StackName}-AZ1"
+            Name: !Sub "${AWS::StackName}-LbSgAZ1"
 
-    AZ2:
-        Description: Availability Zone 2
-        Value: !FindInMap [AvailabilityZone, AZ2, Name]
+    LbSecurityGroupAZ2:
+        Description: Load Balancer security group
+        Value: !Ref LbSecurityGroup
         Export:
-            Name: !Sub "${AWS::StackName}-AZ2"
+            Name: !Sub "${AWS::StackName}-LbSgAZ2"
+
