@@ -1,0 +1,8 @@
+[local]
+localhost
+
+[bastion]
+
+[webserver]
+
+[dbserver]

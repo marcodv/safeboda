@@ -1,0 +1,11 @@
+---
+ - name: Create a launch configuration for the LB
+   ec2_lc:
+     name: safebodalc
+     image_id: 'Replace with webserver ami'
+     key_name: 'Insert ssh key for the instance'
+     security_groups: [ 'Replace with the security group of the webserver' ]
+     instance_type: t2.micro
+     volumes:
+     - device_name: /dev/sdf
+       no_device: true

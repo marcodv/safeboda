@@ -1,0 +1,27 @@
+---
+ - elb_classic_lb:
+     name: "SafebodaUS-LB"
+     state: present
+     region: us-east-1
+     instance_ids:
+      - Replace the value with the webserver id
+      - Replace the value with the webserver id
+     subnets:
+       - Replace with the subnet of the LB
+     listeners: 
+       - protocol: http
+         load_balancer_port: 80
+         instance_port: 80
+         proxy_protocol: True
+     security_group_ids: Replace with the sg group created from the VPC cf
+     cross_az_load_balancing: 'yes'
+     health_check:
+         ping_protocol: http 
+         ping_port: 80
+         ping_path: "/index.html"
+         response_timeout: 5 
+         interval: 30 
+         unhealthy_threshold: 2
+         healthy_threshold: 10
+     scheme: internet-facing
+   

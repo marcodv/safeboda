@@ -1,0 +1,70 @@
+---
+ - name: Install MySQL client and PHP with dependencies
+   yum: name={{item}} state=installed
+   with_items:
+        - mysql
+        - mysql-server
+        - mysql55-server           
+        - perl-Compress-Raw-Bzip2  
+        - perl-Compress-Raw-Zlib   
+        - perl-DBD-MySQL55         
+        - perl-DBI                 
+        - perl-Data-Dumper         
+        - perl-IO-Compress         
+        - perl-Net-Daemon          
+        - perl-PlRPC               
+        - MySQL-python27
+        - python26          
+        - python26-libs              
+
+ - name: Enable MySQL on boot
+   service: name=mysqld enabled=yes
+
+ - name: Start MySQL
+   service: name=mysqld state=started
+
+ - name: Create .my.cnf
+   template:
+    src: "my.cnf"
+    dest: "/root/.my.cnf"
+    owner: root
+    group: root
+    mode: 0600
+
+ - name: Copy the sql schema for the table
+   template:
+    src: "create_table.sql"
+    dest: "/home/ec2-user/create_table.sql"
+    owner: root
+    group: root
+    mode: 0600
+
+ - name: Create safeboda db
+   mysql_db:
+     name: safebodadb
+     state: present
+     login_unix_socket: '/var/lib/mysql/mysql.sock'
+     login_host: localhost
+     login_user: root
+     login_password: root
+
+ - name: Create table Persons in safebodadb
+   mysql_db:
+        login_host: localhost
+        login_password: root
+        login_user: root
+        login_port: 3306
+        name: Persons
+        state: import
+        target: /home/ec2-user/create_table.sql
+
+ - name: Create user safeboda on db
+   mysql_user: 
+     login_unix_socket: '/var/lib/mysql/mysql.sock'
+     login_host: localhost
+     login_user: root
+     login_password: root
+     name: safeboda1 
+     password: safeboda1
+     priv: 'safebodadb.*:ALL,GRANT'
+     state: present

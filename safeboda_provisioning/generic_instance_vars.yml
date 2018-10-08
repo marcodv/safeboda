@@ -1,0 +1,11 @@
+---
+  security_group: 'Replace with the sg id in a public subnet '
+  hosts_file: 'Replace with the PATH of your hosts file'
+  region: us-east-1
+  keypair: 'Insert ssh key used to login on the instance'
+  count: 1
+  instance_type: t2.micro
+  image: ami-0ff8a91507f77f867
+  subnets:
+    - { zone: "us-east-1a", vpc_pvt_subnet: "Replace it with a public subnet "}
+

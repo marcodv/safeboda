@@ -1,0 +1,31 @@
+---
+  - name: Create DbServer
+    hosts: local
+    connection: local
+    gather_facts: False
+    vars_files:
+      - /home/marco/safeboda_provision/db_vars.yml
+
+    tasks:
+      - name: Launch DbServer 
+        with_items: "{{ subnets }}"
+        local_action: ec2 
+                      instance_type={{ instance_type}} 
+                      image={{ image }} 
+                      wait=true 
+                      region={{ region }} 
+                      keypair={{ keypair }}
+                      count={{ count }}
+                      group_id={{ security_group }}
+                      vpc_subnet_id={{ item.vpc_pvt_subnet }}
+        register: ec2
+
+      - name: Add the newly created EC2 instance(s) to the local host group 
+        local_action: lineinfile 
+                      dest={{ hosts_file }}
+                      regexp={{ item.private_ip }} 
+                      insertafter="[dbserver]" line={{ item.private_ip }}
+        with_items: 
+          - "{{ ec2.results[0].instances }}"
+          - "{{ ec2.results[1].instances }}"
+

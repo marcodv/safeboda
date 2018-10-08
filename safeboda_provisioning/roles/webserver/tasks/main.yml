@@ -1,0 +1,37 @@
+---
+ - name: Install MySQL client and PHP with dependencies
+   yum: name={{item}} state=installed
+   with_items:
+        - mysql
+        - mysql-config
+        - mysql55
+        - mysql55-libs
+        - php
+        - php-mysql
+        - php-fpm
+        - apr
+        - apr-util
+        - apr-util-ldap
+        - compat-gmp4
+        - httpd
+        - httpd-tools
+        - php-cli
+        - php-common
+        - php-gd
+   notify:
+    - Starting php-fpm 
+    - Starting apache2
+
+ - name: Enable php-fpm on boot
+   service: name=php-fpm enabled=yes
+ 
+ - name: Enable apache2 on boot
+   service: name=httpd enabled=yes
+
+ - name: Provision the php script for insert data in mysql table 
+   template:
+     src: "connect_db.php"
+     dest: "/var/www/html/connect_db.php"
+     owner: root
+     group: root
+     mode: 0644

@@ -1,0 +1,12 @@
+---
+  security_group: 'Replace with the sg id from the webserver '
+  hosts_file: "/home/marco/safeboda_provision/hosts"
+  region: us-east-1
+  keypair: 'Insert ssh key used to login on the instance'
+  count: 1
+  instance_type: t2.micro
+  image: 'use the AmiId generated before '
+  subnets:
+    - { zone: "us-east-1a", vpc_pvt_subnet: "Replace it with subnet-websever"}
+    - { zone: "us-east-1b", vpc_pvt_subnet: "Replace it with subnet-websever"}
+

@@ -1,0 +1,13 @@
+---
+ - name: Starting php-fpm 
+   service: name=php-fpm state=started 
+ 
+ - name: Enable php-fpm on boot
+   service: name=php-fpm enabled=yes
+ 
+ - name: Starting apache2
+   service: name=httpd state=started 
+ 
+ - name: Enable apache2 on boot
+   service: name=httpd enabled=yes
+

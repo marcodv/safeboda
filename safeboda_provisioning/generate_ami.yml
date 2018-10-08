@@ -1,0 +1,14 @@
+# You need to use this play for generate the ami for db and webserver 
+---
+ - name: Generate AMI for db and webserver
+   hosts: local
+   connection: local
+   gather_facts: False
+
+   tasks:
+   - ec2_ami:
+       instance_id: 'Insert instance id here'
+       wait: yes
+       name: 'Add description of the instance here'
+       tags:
+         Name: Add_Tag_AMI_here

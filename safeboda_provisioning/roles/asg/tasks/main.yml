@@ -1,0 +1,13 @@
+---
+- ec2_asg:
+    name: AsgSafeboda
+    load_balancers: [ 'SafebodaUS-LB' ]
+    availability_zones: [ 'us-east-1a', 'us-east-1b' ]
+    launch_config_name: 'LCSAfeboda'
+    min_size: 0
+    max_size: 1
+    desired_capacity: 0
+    vpc_zone_identifier: [ 'subnet-04c9120590bdbdb27', 'subnet-0083300a3dd4359c5' ]
+    tags:
+      - Name: Name
+        Value: AsgSafeboda
